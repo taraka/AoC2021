@@ -1,7 +1,10 @@
 #![feature(stdin_forwarders)]
 
 fn main() {
-    let input = std::io::stdin().lines().filter_map(|l| u32::from_str_radix(&l.unwrap(), 10).ok()).collect();
+    let input = std::io::stdin()
+        .lines()
+        .filter_map(|l| u32::from_str_radix(&l.unwrap(), 10).ok())
+        .collect();
     println!("Part1: {}", part1(&input));
     println!("Part2: {}", part2(&input, 3));
 }
@@ -16,9 +19,8 @@ pub fn part1(input: &Vec<u32>) -> u32 {
                 count += 1;
             }
         }
-
         prev = Some(*current);
-    };
+    }
 
     count
 }
@@ -33,13 +35,11 @@ pub fn part2(input: &Vec<u32>, window_size: usize) -> u32 {
                 count += 1;
             }
         }
-
         prev = Some(current);
-    };
+    }
 
     count
 }
-
 
 #[cfg(test)]
 mod tests {
