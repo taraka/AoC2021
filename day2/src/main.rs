@@ -1,11 +1,13 @@
 use std::io::{self, Read};
 
+type Ship = (i32, i32, i32);
+
 fn main() -> io::Result<()> {
     let mut buffer = String::new();
     io::stdin().read_to_string(&mut buffer)?;
 
-    println!("Part1: {}", part1(&buffer));
-    println!("Part2: {}", part2(&buffer));
+    println!("Part1: {}", run(&buffer, move_ship_part1));
+    println!("Part2: {}", run(&buffer, move_ship_part2));
     Ok(())
 }
 
@@ -26,23 +28,15 @@ fn make_direction(line: &str) -> Option<Direction> {
     }
 }
 
-fn move_ship_part1((x, y): (i32, i32), dir: Direction) -> (i32, i32) {
+fn move_ship_part1((x, y, _): Ship, dir: Direction) -> Ship {
     match dir {
-        Direction::Forward(n) => (x + n, y),
-        Direction::Down(n) => (x, y + n),
-        Direction::Up(n) => (x, y - n),
+        Direction::Forward(n) => (x + n, y, 0),
+        Direction::Down(n) => (x, y + n, 0),
+        Direction::Up(n) => (x, y - n, 0),
     }
 }
 
-fn part1(input: &str) -> i32 {
-    let (x, y) = input
-        .lines()
-        .filter_map(make_direction)
-        .fold((0, 0), move_ship_part1);
-    x * y
-}
-
-fn move_ship_part2((x, y, aim): (i32, i32, i32), dir: Direction) -> (i32, i32, i32) {
+fn move_ship_part2((x, y, aim): Ship, dir: Direction) -> Ship {
     match dir {
         Direction::Forward(n) => (x + n, y + (n * aim), aim),
         Direction::Down(n) => (x, y, aim + n),
@@ -50,11 +44,11 @@ fn move_ship_part2((x, y, aim): (i32, i32, i32), dir: Direction) -> (i32, i32, i
     }
 }
 
-fn part2(input: &str) -> i32 {
+fn run(input: &str, move_fn: fn(Ship, Direction) -> Ship) -> i32 {
     let (x, y, _aim) = input
         .lines()
         .filter_map(make_direction)
-        .fold((0, 0, 0), move_ship_part2);
+        .fold((0, 0, 0), move_fn);
     x * y
 }
 
@@ -70,10 +64,8 @@ forward 8
 up 3
 down 8
 forward 2"#;
-        assert_eq!(part1(&input), 150);
+        assert_eq!(run(&input, move_ship_part1), 150);
 
-        assert_eq!(part2(&input), 900);
+        assert_eq!(run(&input, move_ship_part2), 900);
     }
 }
-
-//
