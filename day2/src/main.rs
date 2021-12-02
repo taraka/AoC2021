@@ -24,7 +24,7 @@ fn make_direction(line: &str) -> Option<Direction> {
         "down" => Some(Direction::Down(val)),
         "up" => Some(Direction::Up(val)),
         "forward" => Some(Direction::Forward(val)),
-        _ => panic!("Not a valid dir"),
+        _ => None,
     }
 }
 
