@@ -34,9 +34,7 @@ tailrec fun co2(idx: Int, input: List<List<Char>>, a: Char, b: Char): Int {
     if (input.size == 1) {
         return Integer.parseInt(String(input[0].toCharArray()), 2)
     }
-    val common = input.fold(IntArray(input[0].size)) { acc, chars ->
-            chars.forEachIndexed { idx, c -> if (c == '1') { acc[idx] += 1 } };
-            acc  }
-        .map { if (it < input.size  / 2.0) { a } else { b } }
-    return co2(idx + 1, input.filter { it[idx] == common[idx] }, a, b);
+    val count: Int = input.fold(0) { acc, chars -> if (chars[idx] == '1') { acc + 1 } else { acc }}
+    val common = if (count < input.size  / 2.0) { a } else { b }
+    return co2(idx + 1, input.filter { it[idx] == common }, a, b);
 }
