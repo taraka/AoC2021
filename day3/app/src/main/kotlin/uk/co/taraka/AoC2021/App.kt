@@ -27,7 +27,7 @@ fun part1(input: List<String>): Int {
 }
 
 fun part2(input: List<List<Char>>): Int {
-    return co2(0, input, '1', '0') * co2(0, input, '1', '0')
+    return co2(0, input, '1', '0') * co2(0, input, '0', '1')
 }
 
 tailrec fun co2(idx: Int, input: List<List<Char>>, a: Char, b: Char): Int {
