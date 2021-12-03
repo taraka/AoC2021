@@ -31,10 +31,7 @@ fun part2(input: List<List<Char>>): Int {
 }
 
 tailrec fun co2(idx: Int, input: List<List<Char>>, a: Char, b: Char): Int {
-    if (input.size == 1) {
-        return Integer.parseInt(String(input[0].toCharArray()), 2)
-    }
+    if (input.size == 1) { return Integer.parseInt(String(input[0].toCharArray()), 2) }
     val count: Int = input.fold(0) { acc, chars -> if (chars[idx] == '1') { acc + 1 } else { acc }}
-    val common = if (count < input.size  / 2.0) { a } else { b }
-    return co2(idx + 1, input.filter { it[idx] == common }, a, b);
+    return co2(idx + 1, input.filter { it[idx] == if (count < input.size  / 2.0) { a } else { b } }, a, b);
 }
