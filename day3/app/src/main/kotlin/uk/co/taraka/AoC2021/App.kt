@@ -6,6 +6,7 @@ fun main() {
        .readLines()
 
     println("Part1: ${part1(input)}")
+    println("Part2: ${part2(input.map { it.toList() })}")
 }
 
 fun part1(input: List<String>): Int {
@@ -23,4 +24,19 @@ fun part1(input: List<String>): Int {
         };
 
     return γ * ε;
+}
+
+fun part2(input: List<List<Char>>): Int {
+    return co2(0, input, '1', '0') * co2(0, input, '1', '0')
+}
+
+tailrec fun co2(idx: Int, input: List<List<Char>>, a: Char, b: Char): Int {
+    if (input.size == 1) {
+        return Integer.parseInt(String(input[0].toCharArray()), 2)
+    }
+    val common = input.fold(IntArray(input[0].size)) { acc, chars ->
+            chars.forEachIndexed { idx, c -> if (c == '1') { acc[idx] += 1 } };
+            acc  }
+        .map { if (it < input.size  / 2.0) { a } else { b } }
+    return co2(idx + 1, input.filter { it[idx] == common[idx] }, a, b);
 }
