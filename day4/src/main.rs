@@ -1,4 +1,5 @@
 use std::io::{self, Read};
+use std::collections::HashMap;
 
 const CARD_SIZE: usize = 5;
 
@@ -10,6 +11,7 @@ fn main() -> io::Result<()> {
     io::stdin().read_to_string(&mut buffer)?;
 
     println!("Part1: {}", part1(&buffer));
+    println!("Part2: {}", part2(&buffer));
 
     Ok(())
 }
@@ -18,35 +20,64 @@ fn part1(input: &str) -> Value {
     let (balls, cards) = parse_input(input);
 
     for round in 1..=balls.len() {
-        if let Some(c) = play_rounds(&balls[..round], &cards) {
-            return c.iter().filter(|(_, m)| !*m).map(|(v, _)| *v).sum::<Value>() * balls[round-1];
+        for (_, c) in play_rounds(&balls[..round], &cards) {
+            return c
+                .iter()
+                .filter(|(_, m)| !*m)
+                .map(|(v, _)| *v)
+                .sum::<Value>()
+                * balls[round - 1];
         }
     }
     panic!("No solution found");
 }
 
-fn play_rounds(balls: &[Value], cards: &Vec<Card>) -> Option<Card> {
+fn part2(input: &str) -> Value {
+    let (balls, cards) = parse_input(input);
+
+    let mut last_ball = 0;
+    let mut last_card = [(0, false); CARD_SIZE * CARD_SIZE];
+    let mut won_cards = Vec::new();
+
+    for round in 1..=balls.len() {
+        let cards_in_play: &HashMap<usize, Card> = &cards.iter().filter(|(i, _)| !won_cards.contains(*i)).map(|(i,v)| (*i, *v)).collect();
+        for (idx, c) in play_rounds(&balls[..round], &cards_in_play) {
+            last_ball = balls[round - 1];
+            last_card = c.clone();
+            won_cards.push(idx);
+        }
+    }
+
+    return last_card
+        .iter()
+        .filter(|(_, m)| !*m)
+        .map(|(v, _)| *v)
+        .sum::<Value>()
+        * last_ball;
+}
+
+fn play_rounds(balls: &[Value], cards: &HashMap<usize, Card>) -> Vec<(usize, Card)> {
     cards
         .iter()
-        .map(|c| {
-            c.map(|(v, m)| {
+        .map(|(i, c)| {
+            (*i, c.map(|(v, m)| {
                 if balls.contains(&v) {
                     (v, true)
                 } else {
                     (v, m)
                 }
-            })
+            }))
         })
-        .find(is_winner)
+        .filter(|(_, card)| {
+            card.chunks(CARD_SIZE)
+                .any(|line| line.iter().all(|(_, m)| *m))
+                || (0..CARD_SIZE)
+                    .any(|column| card.iter().skip(column).step_by(CARD_SIZE).all(|(_, m)| *m))
+        })
+        .collect()
 }
 
-fn is_winner(card: &Card) -> bool {
-    card.chunks(CARD_SIZE)
-        .any(|line| line.iter().all(|(_, m)| *m))
-        || (0..CARD_SIZE).any(|column| card.iter().skip(column).step_by(CARD_SIZE).all(|(_, m)| *m))
-}
-
-fn parse_input(input: &str) -> (Vec<Value>, Vec<Card>) {
+fn parse_input(input: &str) -> (Vec<Value>, HashMap<usize, Card>) {
     let (balls_str, cards_str) = input.split_once("\n\n").unwrap();
     (parse_balls(balls_str), parse_cards(cards_str))
 }
@@ -58,7 +89,7 @@ fn parse_balls(input: &str) -> Vec<Value> {
         .collect()
 }
 
-fn parse_cards(input: &str) -> Vec<Card> {
+fn parse_cards(input: &str) -> HashMap<usize, Card> {
     input
         .split("\n\n")
         .map(|cs| {
@@ -70,6 +101,7 @@ fn parse_cards(input: &str) -> Vec<Card> {
                 .try_into()
                 .expect("This card doesn't have the right number of values")
         })
+        .enumerate()
         .collect()
 }
 
@@ -99,5 +131,6 @@ mod tests {
 22 11 13  6  5
 2  0 12  3  7"#;
         assert_eq!(part1(&input), 4512);
+        assert_eq!(part2(&input), 1924);
     }
 }
