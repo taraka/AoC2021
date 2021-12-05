@@ -1,5 +1,5 @@
-use std::io::{self, Read};
 use std::collections::HashMap;
+use std::io::{self, Read};
 
 const CARD_SIZE: usize = 5;
 
@@ -40,7 +40,11 @@ fn part2(input: &str) -> Value {
     let mut won_cards = Vec::new();
 
     for round in 1..=balls.len() {
-        let cards_in_play: &HashMap<usize, Card> = &cards.iter().filter(|(i, _)| !won_cards.contains(*i)).map(|(i,v)| (*i, *v)).collect();
+        let cards_in_play: &HashMap<usize, Card> = &cards
+            .iter()
+            .filter(|(i, _)| !won_cards.contains(*i))
+            .map(|(i, v)| (*i, *v))
+            .collect();
         for (idx, c) in play_rounds(&balls[..round], &cards_in_play) {
             last_ball = balls[round - 1];
             last_card = c.clone();
@@ -60,13 +64,16 @@ fn play_rounds(balls: &[Value], cards: &HashMap<usize, Card>) -> Vec<(usize, Car
     cards
         .iter()
         .map(|(i, c)| {
-            (*i, c.map(|(v, m)| {
-                if balls.contains(&v) {
-                    (v, true)
-                } else {
-                    (v, m)
-                }
-            }))
+            (
+                *i,
+                c.map(|(v, m)| {
+                    if balls.contains(&v) {
+                        (v, true)
+                    } else {
+                        (v, m)
+                    }
+                }),
+            )
         })
         .filter(|(_, card)| {
             card.chunks(CARD_SIZE)
