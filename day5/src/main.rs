@@ -1,5 +1,7 @@
 #![feature(int_abs_diff)]
 use std::io::{self, Read};
+use std::collections::HashSet;
+use std::collections::HashMap;
 
 fn main() -> io::Result<()> {
     let mut buffer = String::new();
@@ -34,79 +36,40 @@ impl Line {
     }
 }
 
-fn get_map(lines: &Vec<Line>) -> Vec<Vec<usize>> {
-    let (x, y) = lines.iter().fold((0, 0), |(x, y), l| {
-        (x.max(l.x1).max(l.x2), y.max(l.y1).max(l.y2))
-    });
+fn points_on_line(line: &Line) -> Vec<(usize, usize)> {
+    if line.x1 == line.x2 {
+        return (line.y1.min(line.y2)..=line.y1.max(line.y2)).map(|y| (line.x1, y)).collect();
+    }
 
-    // This could be so much faster generating the points on the lines and then adding them to the map
-
-    lines.iter().fold(vec![vec![0; y + 1]; x + 1], |map, l| {
-        map.iter()
-            .enumerate()
-            .map(|(x, column)| {
-                column
-                    .iter()
-                    .enumerate()
-                    .map(|(y, point)| {
-                        if point_is_on_line(x, y, &l) {
-                            point + 1
-                        } else {
-                            *point
-                        }
-                    })
-                    .collect()
-            })
-            .collect()
-    })
-}
-
-fn point_is_on_line(x: usize, y: usize, line: &Line) -> bool {
-    if line.x1 == line.x2 || line.y1 == line.y2 {
-        return x >= line.x1.min(line.x2)
-            && x <= line.x1.max(line.x2)
-            && y >= line.y1.min(line.y2)
-            && y <= line.y1.max(line.y2);
+    if line.y1 == line.y2 {
+        return (line.x1.min(line.x2)..=line.x1.max(line.x2)).map(|x| (x, line.y1)).collect();
     }
 
     if line.x1.abs_diff(line.x2) == line.y1.abs_diff(line.y2) {
         let x_step: isize = if line.x1 < line.x2 { 1 } else { -1 };
         let y_step: isize = if line.y1 < line.y2 { 1 } else { -1 };
 
-        for i in 0..=line.x1.abs_diff(line.x2) {
-            if x == ((x_step * i as isize) + line.x1 as isize) as usize
-                && y == ((y_step * i as isize) + line.y1 as isize) as usize
-            {
-                return true;
-            }
-        }
+        return (0..=line.x1.abs_diff(line.x2)).map(|i| (((x_step * i as isize) + line.x1 as isize) as usize, ((y_step * i as isize) + line.y1 as isize) as usize)).collect();
     }
 
-    return false;
+    return vec![];
 }
 
 fn part1(input: &str) -> usize {
-    let lines = input
-        .lines()
-        .map(Line::new)
-        .filter(|l| l.x1 == l.x2 || l.y1 == l.y2)
-        .collect();
-
-    get_map(&lines)
-        .into_iter()
-        .flatten()
-        .filter(|c| *c > 1)
-        .count()
+    let points: Vec<(usize, usize)> = input.lines().map(Line::new).filter(|l| l.x1 == l.x2 || l.y1 == l.y2).flat_map(|l| points_on_line(&l)).collect();
+    let uniq_points: HashSet<(usize, usize)> = points.iter().copied().collect();
+    points.len() - uniq_points.len()
 }
 
 fn part2(input: &str) -> usize {
-    let lines = input.lines().map(Line::new).collect();
+    let points: Vec<(usize, usize)> = input.lines().map(Line::new).flat_map(|l| points_on_line(&l)).collect();
+    let mut points_count: HashMap<(usize, usize), usize> = points.iter().map(|p| (*p, 0)).collect();
 
-    get_map(&lines)
-        .into_iter()
-        .flatten()
-        .filter(|c| *c > 1)
-        .count()
+    for p in points {
+        *points_count.get_mut(&p).unwrap() += 1;
+    }
+
+    points_count.values().filter(|c| **c > 1).count()
 }
 
 #[cfg(test)]
