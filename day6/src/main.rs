@@ -15,19 +15,14 @@ fn main() -> io::Result<()> {
 }
 
 fn create_tally(input: &Vec<usize>) -> [usize; 9] {
-    let mut tally = [0; 9];
-    for x in input {
-        tally[*x] += 1;
-    }
-    tally
+    input.iter().fold([0; 9], |mut t, v| { t[*v] += 1; t })
 }
 
 fn run(input: &Vec<usize>, num_days: usize) -> usize {
     (0..num_days)
-        .fold(create_tally(input), |tally, i| {
-            let mut t = tally.clone();
-            t[(i + 7) % tally.len()] += tally[i % tally.len()];
-            t
+        .fold(create_tally(input), |mut tally, i| {
+            tally[(i + 7) % tally.len()] += tally[i % tally.len()];
+            tally
         })
         .iter()
         .sum()
