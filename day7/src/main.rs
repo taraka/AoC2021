@@ -15,10 +15,22 @@ fn main() -> io::Result<()> {
 }
 
 fn part1(input: &Vec<i32>) -> i32 {
-    (*input.iter().min().unwrap()..*input.iter().max().unwrap()).map(|pos| input.iter().map(|x| (pos - x).abs()).sum() ).min().unwrap()
+    (*input.iter().min().unwrap()..*input.iter().max().unwrap())
+        .map(|pos| input.iter().map(|x| (pos - x).abs()).sum())
+        .min()
+        .unwrap()
 }
 fn part2(input: &Vec<i32>) -> i32 {
-    (*input.iter().min().unwrap()..*input.iter().max().unwrap()).map(|pos| input.iter().map(|x| (pos - x).abs()).map(|n| (n*(n+1))/2).sum() ).min().unwrap()
+    (*input.iter().min().unwrap()..*input.iter().max().unwrap())
+        .map(|pos| {
+            input
+                .iter()
+                .map(|x| (pos - x).abs())
+                .map(|n| (n * (n + 1)) / 2)
+                .sum()
+        })
+        .min()
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -27,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let input = vec![16,1,2,0,4,2,7,1,2,14];
+        let input = vec![16, 1, 2, 0, 4, 2, 7, 1, 2, 14];
         assert_eq!(part1(&input), 37);
         assert_eq!(part2(&input), 168);
     }
