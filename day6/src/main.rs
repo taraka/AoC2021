@@ -1,4 +1,5 @@
 use std::io::{self, Read};
+use std::time::Instant;
 
 fn main() -> io::Result<()> {
     let mut buffer = String::new();
@@ -8,8 +9,13 @@ fn main() -> io::Result<()> {
         .filter_map(|x| usize::from_str_radix(x, 10).ok())
         .collect();
 
-    println!("Part1: {}", run(&input, 80));
-    println!("Part2: {}", run(&input, 256));
+    let now1 = Instant::now();
+    let part1 = run(&input, 80);
+    println!("Part1: {} in {}us", part1, now1.elapsed().as_micros());
+
+    let now2 = Instant::now();
+    let part2 = run(&input, 256);
+    println!("Part2: {} in {}us", part2, now2.elapsed().as_micros());
 
     Ok(())
 }
@@ -19,6 +25,7 @@ fn create_tally(input: &Vec<usize>) -> [usize; 9] {
 }
 
 fn run(input: &Vec<usize>, num_days: usize) -> usize {
+
     (0..num_days)
         .fold(create_tally(input), |mut tally, i| {
             tally[(i + 7) % tally.len()] += tally[i % tally.len()];
