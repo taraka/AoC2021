@@ -13,7 +13,7 @@ def isMinimum(y, x, map):
         values.append(map[y][x+1])
 
     return min(values) > map[y][x]
-        
+
 
 with open("./input") as f:
 		lines = f.readlines()
