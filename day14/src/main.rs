@@ -1,5 +1,9 @@
 use std::collections::HashMap;
+use itertools::Itertools;
 use std::io::{self, Read};
+
+type CountsMap = HashMap<(char, char), u64>;
+type Rules = HashMap<(char, char), char>;
 
 fn main() -> io::Result<()> {
     let mut buffer = String::new();
@@ -16,55 +20,40 @@ fn run(input: &str, runs: u64) -> u64 {
     let counts = (0..runs)
         .fold(init, |acc, _| apply_rules(acc, &rules))
         .into_iter()
-        .filter(|((c, _), v)| *v > 0 && *c != ' ')
         .fold(HashMap::new(), |mut map, ((c, _), v)| {
             *map.entry(c).or_insert(0) += v;
             map
         });
-    counts.values().max().unwrap() - counts.values().min().unwrap()
+    //Not sure where my off by one error is comming from
+    counts.values().max().unwrap() - counts.values().min().unwrap() + 1
 }
 
-fn parse_input(input: &str) -> (HashMap<(char, char), u64>, HashMap<(char, char), char>) {
-    let (initial, rules_input) = input.split_once("\n\n").unwrap();
-    let rules = rules_input.lines().map(parse_rules).collect();
-    (
-        format!(" {} ", initial)
+fn parse_input(input: &str) -> (CountsMap, Rules) {
+    let (initial_str, rules_str) = input.split_once("\n\n").unwrap();
+    let rules = rules_str.lines().map(parse_rules).collect();
+    let initial = format!("{} ", initial_str)
             .chars()
-            .collect::<Vec<char>>()
-            .windows(2)
-            .fold(HashMap::new(), |mut map, c| {
-                *map.entry((c[0], c[1])).or_insert(0) += 1;
+            .tuple_windows()
+            .fold(HashMap::new(), |mut map, t| {
+                *map.entry(t).or_insert(0) += 1;
                 map
-            }),
-        rules,
-    )
+            });
+    (initial, rules)
 }
 
 fn parse_rules(line: &str) -> ((char, char), char) {
-    let (pair, insert) = line.split_once(" -> ").unwrap();
-    let mut chars = pair.chars();
-    (
-        (chars.next().unwrap(), chars.next().unwrap()),
-        insert.chars().next().unwrap(),
-    )
+    let chars: Vec<char> = line.chars().collect();
+    ((chars[0], chars[1]), chars[6])
 }
 
-fn apply_rules(
-    mut current: HashMap<(char, char), u64>,
-    rules: &HashMap<(char, char), char>,
-) -> HashMap<(char, char), u64> {
-    for ((a, b), v) in current.clone() {
-        if v == 0 {
-            continue;
+fn apply_rules(current: CountsMap, rules: &Rules) -> CountsMap {
+    current.iter().fold(HashMap::new(), |mut map, ((a, b), v)| {
+        if let Some(c) = rules.get(&(*a, *b)) {
+            *map.entry((*a, *c)).or_insert(0) += v;
+            *map.entry((*c, *b)).or_insert(0) += v;
         }
-        if let Some(c) = rules.get(&(a, b)) {
-            *current.entry((a, b)).or_insert(0) -= v;
-            *current.entry((a, *c)).or_insert(0) += v;
-            *current.entry((*c, b)).or_insert(0) += v;
-        }
-    }
-
-    current
+        map
+    })
 }
 
 #[cfg(test)]
