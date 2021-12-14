@@ -24,8 +24,7 @@ fn run(input: &str, runs: u64) -> u64 {
             *map.entry(c).or_insert(0) += v;
             map
         });
-    //Not sure where my off by one error is comming from
-    counts.values().max().unwrap() - counts.values().min().unwrap() + 1
+    counts.values().max().unwrap() - counts.values().min().unwrap()
 }
 
 fn parse_input(input: &str) -> (CountsMap, Rules) {
@@ -51,6 +50,8 @@ fn apply_rules(current: CountsMap, rules: &Rules) -> CountsMap {
         if let Some(c) = rules.get(&(*a, *b)) {
             *map.entry((*a, *c)).or_insert(0) += v;
             *map.entry((*c, *b)).or_insert(0) += v;
+        } else if *b == ' ' {
+            map.insert((*a, *b), 1);
         }
         map
     })
