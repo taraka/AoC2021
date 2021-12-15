@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use itertools::Itertools;
+use std::collections::HashMap;
 use std::io::{self, Read};
 
 type CountsMap = HashMap<(char, char), u64>;
@@ -9,8 +9,8 @@ fn main() -> io::Result<()> {
     let mut buffer = String::new();
     io::stdin().read_to_string(&mut buffer)?;
 
-    println!("Part1: \n{}", run(&buffer, 10));
-    println!("Part2: \n{}", run(&buffer, 40));
+    println!("Part1: {}", run(&buffer, 10));
+    println!("Part2: {}", run(&buffer, 40));
 
     Ok(())
 }
@@ -30,7 +30,8 @@ fn run(input: &str, runs: u64) -> u64 {
 fn parse_input(input: &str) -> (CountsMap, Rules) {
     let (initial_str, rules_str) = input.split_once("\n\n").unwrap();
     let rules = rules_str.lines().map(parse_rules).collect();
-    let initial = format!("{} ", initial_str)
+    let initial =
+        format!("{} ", initial_str)
             .chars()
             .tuple_windows()
             .fold(HashMap::new(), |mut map, t| {
