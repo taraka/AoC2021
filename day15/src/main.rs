@@ -1,12 +1,16 @@
 use pathfinding::prelude::{absdiff, astar};
 use std::io::{self, Read};
+use std::time::Instant;
 
 fn main() -> io::Result<()> {
     let mut buffer = String::new();
     io::stdin().read_to_string(&mut buffer)?;
 
     println!("Part1: {}", run(&buffer, 1));
-    println!("Part2: {}", run(&buffer, 5));
+
+    let now2 = Instant::now();
+    let part2 = run(&buffer, 5);
+    println!("Part2: {} in {}ms", part2, now2.elapsed().as_millis());
 
     Ok(())
 }
@@ -43,17 +47,19 @@ fn parse_input(input: &str, size: u32) -> Vec<Vec<u32>> {
         .flat_map(|i| {
             input
                 .lines()
-                .map(|l| {
-                    (0..size)
-                        .flat_map(|j| {
-                            l.chars()
-                                .filter_map(|c| c.to_digit(10))
-                                .map(|d| ((d + i + j - 1) % 9) + 1)
-                                .collect::<Vec<u32>>()
-                        })
-                        .collect()
-                })
+                .map(|l| parse_line(l, i, size))
                 .collect::<Vec<Vec<u32>>>()
+        })
+        .collect()
+}
+
+fn parse_line(line: &str, i: u32, size: u32) -> Vec<u32> {
+    (0..size)
+        .flat_map(|j| {
+            line.chars()
+                .filter_map(|c| c.to_digit(10))
+                .map(|d| ((d + i + j - 1) % 9) + 1)
+                .collect::<Vec<u32>>()
         })
         .collect()
 }
